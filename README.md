@@ -4,7 +4,7 @@
 
 series is basically a TV Show tracker. You can use it to check when the next episode of some TV Show is going to air, or to list the names and air dates of previous episodes. You can also use it to help you rename your TV Show's files to something like "Some TV Show - S01E04 - Name of the episode.ext"
 
-You can find information on what each file does in Configuration(https://github.com/ngserro/series/README.md#configuration).
+You can find information on what each file does in [Configuration](https://github.com/ngserro/series#configuration).
 
 ## Installation
 
