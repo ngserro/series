@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#######################################
+# 			Configuration		  	  #
+#######################################
+
+# Followed TV Shows
+series=( American_Horror_Story
+		 Dexter
+		 Game_Of_Thrones
+		 Hannibal
+		 Louie
+		 Modern_Family
+		 666_Park_Avenue
+		 True_Blood
+		 The_Walking_Dead
+		 Wilfred
+		)
+
+# Path to series.rb
+bin_path=`echo "$HOME/bin/series"`
+
+# Path to TV Show location
+pasta_series=`echo "/media/ELEMENTS/TV_Shows"`
+
+# Path to Movie location
+pasta_movies=`echo "/media/ELEMENTS/Movies"`
+
+# Path to logs
+pasta_logs=`echo "$HOME/Dropbox/log"`
+
+# Path to HTML file with summary
+ficheiro_html=`echo "$HOME/Dropbox/Public/series.html"`
+
+# Transmission
+$transmission_credentials="user:password"
+$transmission_dlpath="/home/pi/Downloads/Series"
+$transmission_port="26001"

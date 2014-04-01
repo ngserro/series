@@ -19,43 +19,8 @@
 #
 # * Copyright 2009 Nuno Serro
 
-
-#######################################
-# 			Configuração		  	  #
-#######################################
-
-# Series que são seguidas
-series=( American_Horror_Story
-		 Dexter
-		 Game_Of_Thrones
-		 Hannibal
-		 Louie
-		 Modern_Family
-		 666_Park_Avenue
-		 True_Blood
-		 The_Walking_Dead
-		 Wilfred
-		)
-
-# Localização do script de series (series.rb)
-bin_path=`echo "$HOME/bin/series"`
-
-# Pasta de Series
-pasta_series=`echo "/media/ELEMENTS/TV_Shows"`
-
-# Pasta de logs
-pasta_logs=`echo "$HOME/Dropbox/log"`
-
-# Ficheiro HTML com resumo
-ficheiro_html=`echo "$HOME/Dropbox/Public/series.html"`
-
-# Trasmission
-$transmission_credentials="user:password"
-$transmission_dlpath="/home/pi/Downloads/Series"
-$transmission_port="26001"
-
-
-#######################################
+# Load config
+test -r ~/bin/series/series_config && . ~/bin/series/series_config
 
 OS=$(uname)
 ARCH=$(uname -m)
@@ -273,6 +238,11 @@ case "$1" in
 
 				destino=$pasta_series
 				cd $2
+				
+				#Move ficheiros para a raiz e apaga pastas
+ 				find . ! -type d -exec mv "{}" . \; 2> /dev/null
+ 				find . -type d -exec rm -rf "{}" \; 2> /dev/null
+
 				ficheiros=*
 				
 				echo "################" >> $log
@@ -286,11 +256,13 @@ case "$1" in
 				for item in $ficheiros
 				do
 					#Renomeia
-					echo $item
 					novo_nome=`$bin_path/series.rb "$item"` 
 					if [ $? != 0 ]
 					then
-						break
+						# Não encontrou serie, talvez seja filme
+						echo "mv $2/$item $pasta_movies/" >> $log
+						mv $2"/""$item" $pasta_movies"/"
+						continue
 					fi
 					mv "$item" $2"/""$novo_nome" >> $log
 
@@ -304,7 +276,6 @@ case "$1" in
 					$HOME/bin/boxcar.sh "$HOSTNAME" "Series" "Episódio arrumado: $novo_nome"
 					xbmc-send -a "Notification(Series,Episódio arrumado: $novo_nome)"
 
-
 				done
 				IFS=$OIFS
 				$HOME/bin/dropbox_uploader.sh upload $pasta_logs/series_moved.log /log/series_moved.log
@@ -313,9 +284,9 @@ case "$1" in
 			fi
 		fi
 		# Actualiza "base de dados"
-		command ls -lR $pasta_series > $pasta_logs/lista.log
+		command /bin/ls -1R $pasta_series > $pasta_logs/lista.log
 
-		# Remove torrents que estejam completos
+		Remove torrents que estejam completos
 		completos=`transmission-remote localhost:$transmission_port -n $transmission_credentials -l | grep 100% | awk '{ print $1 }'`
 		for var in "${completos[@]}"
 		do
@@ -444,7 +415,7 @@ case "$1" in
 
 	"--update" | "-u" )
 
-	command ls -lR $pasta_series > $pasta_logs/lista.log
+	command /bin/ls -1R $pasta_series > $pasta_logs/lista.log
 	echo "Lista actualizada"
 	exit	
 	;;

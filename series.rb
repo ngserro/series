@@ -26,7 +26,7 @@ require 'date'
 require 'net/http'
 require 'etc'
 
-$cache_permite=1 	# 1 - Permite criacao de ficheiro local de cache, 0 - Nao permite
+$cache_permite=0	# 1 - Permite criacao de ficheiro local de cache, 0 - Nao permite
 $benchmark=0 		# 1 - Mostra o tempo de execucao, 0 - Nao mostra
 
 $cache_folder_name=Dir.pwd+"/series_cache"
