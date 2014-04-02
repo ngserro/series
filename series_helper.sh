@@ -243,7 +243,7 @@ case "$1" in
 				cd $2
 				
 				#Move ficheiros para a raiz e apaga pastas
- 				find . ! -type d -exec mv "{}" . \; 2> /dev/null
+ 				find . -iregex '.*\(avi\|mkv\|mpg\|mpeg\|mp4\|m4v\|wmv\)' -exec mv "{}" . \; 2> /dev/null
  				find . -type d -exec rm -rf "{}" \; 2> /dev/null
 
 				ficheiros=*
@@ -253,7 +253,7 @@ case "$1" in
 				echo "################" >> $log
 				echo "Lista de ficheiros originais:" >> $log
 				ls $2 >> $log
-				echo "Extensoes filtradas: *.avi *.mkv *.mpg *.mp4" >> $log
+				echo "Extensoes filtradas: *.avi *.mkv *.mpg *.mpeg *.mp4 *.m4v *.wmv" >> $log
 				echo "Comandos utilizados:" >> $log
 
 				for item in $ficheiros
