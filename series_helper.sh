@@ -26,6 +26,8 @@ OS=$(uname)
 ARCH=$(uname -m)
 TIMESTAMP=$(date)
 HOSTNAME=$(hostname)
+STORAGE_TOTAL=$(df -ha $pasta_series | tail -1 | awk '{print $2}')
+STORAGE_FREE=$(df -ha $pasta_series | tail -1 | awk '{print $4}')
 
 template_inicio="
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
@@ -61,6 +63,7 @@ template_fim="
 		   		<small>
 		   			
 		   			Ultima Actualizacao: $TIMESTAMP<br/>
+		   			Storage: $STORAGE_FREE free / $STORAGE_TOTAL total <br/>
 		   			Provider: $OS $ARCH<br/>
 		   		</small>
 		   	</div>
