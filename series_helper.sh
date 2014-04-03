@@ -250,10 +250,7 @@ case "$1" in
 				
 				#Move ficheiros para a raiz e apaga pastas
  				find . -iregex '.*\(srt\|avi\|mkv\|mpg\|mpeg\|mp4\|m4v\|wmv\)' -exec mv "{}" . \; 2> /dev/null
- 				find . -type d -exec rm -rf "{}" \; 2> /dev/null
-
-				ficheiros=*
-				
+		
 				echo "################" >> $log
 				date +'%d-%m-%Y-%H:%M' >> $log
 				echo "################" >> $log
@@ -262,7 +259,7 @@ case "$1" in
 				echo "Extensoes filtradas: *.srt *.avi *.mkv *.mpg *.mpeg *.mp4 *.m4v *.wmv" >> $log
 				echo "Comandos utilizados:" >> $log
 
-				for item in $ficheiros
+				for item in *.srt *.avi *.mkv *.mpg *.mpeg *.mp4 *.m4v *.wmv
 				do
 					#Renomeia
 					novo_nome=`$bin_path/series.rb "$item"` 
