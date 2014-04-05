@@ -358,10 +358,10 @@ class Serie
 		end
 		link = "http://epguides.com/"+Serie.limpa(nome_serie,"link")+"/".chomp
 		#Caso o link esteja morto, experimenta retirando o último caracter
-		if isLive?(link) == false then
-			link.sub!(/.\/$/,'/')
-			nome_serie.sub!(/.$/,'')
-		end
+		# if isLive?(link) == false then
+		# 	link.sub!(/.\/$/,'/')
+		# 	nome_serie.sub!(/.$/,'')
+		# end
 		# Testa se tem ligacao a Internet
 		if testa_ligacao "http://epguides.com/" == 0
 			return Serie.limpa(Serie.capitaliza(nome_serie),"offline"), link
