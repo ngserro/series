@@ -352,10 +352,10 @@ class Serie
 		if nome_serie.rindex('.') != nil then
 			nome_serie = nome_serie[0,nome_serie.rindex('.')]
 		end
-		#se achar " - s" remove
-		if nome_serie.rindex(' - s') != nil then
-			nome_serie = nome_serie[0,nome_serie.rindex(' - s')]
-		end
+		# Removes '-s' and '- s' from the end of the string
+		nome_serie.sub!(/- s$/,'')
+		nome_serie.sub!(/-s$/,'')
+
 		link = "http://epguides.com/"+Serie.limpa(nome_serie,"link")+"/".chomp
 		#Caso o link esteja morto, experimenta retirando o último caracter
 		# if isLive?(link) == false then
