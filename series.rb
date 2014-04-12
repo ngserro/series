@@ -355,6 +355,7 @@ class Serie
 		# Removes '-s' and '- s' from the end of the string
 		nome_serie.sub!(/- s$/,'')
 		nome_serie.sub!(/-s$/,'')
+		nome_serie.sub!(/_s$/,'')
 
 		link = "http://epguides.com/"+Serie.limpa(nome_serie,"link")+"/".chomp
 		#Caso o link esteja morto, experimenta retirando o último caracter
