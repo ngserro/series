@@ -94,7 +94,7 @@ function falta {
 		# Nao tem o ultimo Episódio, vai fazer print dos que faltam.
 
 		ultimo_disponivel=`cat $HOME/.temp.out | sed 's/\(.*\) - S[0-9][0-9]E//' | grep [0-9] | sed '1s/^[0]//'`
-		ultimo_existente=`cat $pasta_logs/lista.log | grep "$in" | tail -1 | sed 's/\(.*\) - \(.*\)/\1/' | sed 's/\(.*\) - S[0-9][0-9]E//' | sed '1s/^[0]//'`
+		ultimo_existente=`cat $pasta_logs/lista.log | grep "$in" | grep -v "\/.*/.*/" | tail -1 | sed 's/\(.*\) - \(.*\)/\1/' | sed 's/\(.*\) - S[0-9][0-9]E//' | sed '1s/^[0]//'`
 
 		#Se ultimo existente tiver numero superior ao ultimo disponivel, significa que o utltimo existente e da serie anterior, logo coloca ultimo existente a 0
 		if [ "$ultimo_existente" == "" ]
