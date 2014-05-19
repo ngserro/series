@@ -212,7 +212,7 @@ case "$1" in
 			torrent_bin="open /Applications/Transmission.app/"
 		else
 			$HOME/bin/boxcar.sh "$HOSTNAME" "Series" "Download iniciado: $2"
-			xbmc-send -a "Notification(Series,Download iniciado: $2)"
+			#xbmc-send -a "Notification(Series,Download iniciado: $2)"
 			torrent_bin="transmission-remote localhost:$transmission_port -n $transmission_credentials -w $transmission_dlpath -a"
 		fi
 		$torrent_bin $magnet
@@ -280,7 +280,7 @@ case "$1" in
 					echo "mv $2/$novo_nome $destino/$nome_serie/Season $num_serie" >> $log
 					mv $2"/""$novo_nome" $destino"/"$nome_serie"/Season "$num_serie
 					$HOME/bin/boxcar.sh "$HOSTNAME" "Series" "Episódio arrumado: $novo_nome"
-					xbmc-send -a "Notification(Series,Episódio arrumado: $novo_nome)"
+					#xbmc-send -a "Notification(Series,Episódio arrumado: $novo_nome)"
 
 				done
 				IFS=$OIFS
