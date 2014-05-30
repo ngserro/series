@@ -65,6 +65,7 @@ template_fim="
 		   			Ultima Actualizacao: $TIMESTAMP<br/>
 		   			Storage: $STORAGE_FREE free / $STORAGE_TOTAL total <br/>
 		   			Provider: $OS $ARCH<br/>
+		   			IP cliente:<script type="text/javascript" src="http://l2.io/ip.js"></script><br />
 		   		</small>
 		   	</div>
 	   	</center>
