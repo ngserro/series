@@ -358,11 +358,12 @@ class Serie
 		nome_serie.sub!(/_s$/,'')
 
 		link = "http://epguides.com/"+Serie.limpa(nome_serie,"link")+"/".chomp
-		#Caso o link esteja morto, experimenta retirando o último caracter
-		# if isLive?(link) == false then
-		# 	link.sub!(/.\/$/,'/')
-		# 	nome_serie.sub!(/.$/,'')
-		# end
+		#Caso o link esteja morto, experimenta retirando "US", "Australia" or "UK" do fim da string
+		if isLive?(link) == false then
+			link.sub!(/us\/$|uk\/$|australia\/$/,'/')
+			nome_serie.sub!(/us$|uk$|australia$/,'')
+		end
+		puts link
 		# Testa se tem ligacao a Internet
 		if testa_ligacao "http://epguides.com/" == 0
 			return Serie.limpa(Serie.capitaliza(nome_serie),"offline"), link
