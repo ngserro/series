@@ -363,7 +363,6 @@ class Serie
 			link.sub!(/us\/$|uk\/$|australia\/$/,'/')
 			nome_serie.sub!(/us$|uk$|australia$/,'')
 		end
-		puts link
 		# Testa se tem ligacao a Internet
 		if testa_ligacao "http://epguides.com/" == 0
 			return Serie.limpa(Serie.capitaliza(nome_serie),"offline"), link
