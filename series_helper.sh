@@ -35,8 +35,8 @@ template_inicio="
 	<head>
 		<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">
 		<title>TV Shows</title>
-		<link href=\"http://www.dropbox.com/static/css/main.css\" rel=\"stylesheet\" type=\"text/css\">
-		<link rel=\"shortcut icon\" href=\"http://www.dropbox.com/static/images/favicon.ico\"/>
+		<link href=\"https://www.dropbox.com/static/css/main.css\" rel=\"stylesheet\" type=\"text/css\">
+		<link rel=\"shortcut icon\" href=\"https://www.dropbox.com/static/images/favicon.ico\"/>
 		<style type=\"text/css\">
   			.footer, .push {
 				height: 4em;
@@ -58,7 +58,7 @@ template_fim="
 	   		</td></tr></table>
 	   	</div>
 	   	<center>
-	   		<a href=\"https://www.dropbox.com/referrals/NTM2NDA1NTk\"><img id=\"errorimage\" src=\"http://www.dropbox.com/static/images/psychobox.png\"/></a> 
+	   		<a href=\"https://www.dropbox.com/referrals/NTM2NDA1NTk\"><img id=\"errorimage\" src=\"https://www.dropbox.com/static/images/psychobox.png\"/></a> 
 		   	<div class=\"footer\">
 		   		<small>
 		   			
