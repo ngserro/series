@@ -170,13 +170,13 @@ class ListaEpisodios
 						# Procura data nesta "linha".
 						begin
 							data=Date.parse(linha,comp=true) if linha!=nil
-			  				# Se a data for maior do que a anterior em 1000 dias corrige o erro por colocando-a igual a anterior. Isto introduz erro.
+			  				# Se a data for maior ou menor do que a anterior em 1000 dias corrige o erro por colocando-a igual a anterior. Isto introduz erro.
 							if $total_epis > 1 then
 								teste = lista[$total_epis-1]
 								if episodio.to_i == 1 then 
 							  		data=Date.parse(linha,comp=true) 
 							  	else
-							  		data=Date.parse(teste["data"],comp=true) if (Date.parse(linha,comp=true) - Date.parse(teste["data"],comp=true)).to_i > 300 and Date.parse(teste["data"],comp=true)!=Date.parse("01 Jan 1900",comp=true)
+							  		data=Date.parse(teste["data"],comp=true) if ((Date.parse(linha,comp=true) - Date.parse(teste["data"],comp=true)).to_i > 300 or (Date.parse(linha,comp=true) - Date.parse(teste["data"],comp=true)).to_i < 0) and Date.parse(teste["data"],comp=true)!=Date.parse("01 Jan 1900",comp=true)
 							  	end
 							end
 							if linha.index("UNAIRED")!=nil then
