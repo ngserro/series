@@ -179,7 +179,7 @@ class ListaEpisodios
 							  		data=Date.parse(teste["data"],comp=true) if ((Date.parse(linha,comp=true) - Date.parse(teste["data"],comp=true)).to_i > 300 or (Date.parse(linha,comp=true) - Date.parse(teste["data"],comp=true)).to_i < 0) and Date.parse(teste["data"],comp=true)!=Date.parse("01 Jan 1900",comp=true)
 							  	end
 							end
-							if linha.index("UNAIRED")!=nil then
+							if linha.index("UNAIRED")!=nil or linha.index("UNKNOWN")!=nil then
 								data=Date.parse("01 Jan 1900",comp=true)
 							end
 						rescue
