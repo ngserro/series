@@ -200,13 +200,19 @@ case "$1" in
 		search=`echo $2+PublicHD | sed 's/-/+/g'`
 		info=`echo $search | grep -o "S[0-9][0-9]E[0-9][0-9]"`
 		wget --quiet "http://thepiratebay.se/search/$search" -O $HOME/.series_link
-		# If there are No hits for PublicHD, tries standard definition
+		# If there are No hits for PublicHD, tries 720p
 		line=$(grep "No hits." $HOME/.series_link)
 		if [ $? -eq 0 ]
    		then
-    		search=`echo $2 | sed 's/-/+/g'`
+    		search=`echo $2+720p | sed 's/-/+/g'`
 			info=`echo $search | grep -o "S[0-9][0-9]E[0-9][0-9]"`
 			wget --quiet "http://thepiratebay.se/search/$search" -O $HOME/.series_link
+			# If there are No hits for HD, tries standard definition
+			line=$(grep "No hits." $HOME/.series_link)
+			if [ $? -eq 0 ]
+   			then
+    			search=`echo $2 | sed 's/-/+/g'`
+				info=`echo $search | grep -o "S[0-9][0-9]E[0-9][0-9]"`	
 		fi 
 		magnet=$(cat $HOME/.series_link | grep $info | grep -om 1 "magnet:.*\" title=\"Down" | sed -e 's/\" title=\"Down//')
 		if [ "$OS" == "Darwin" ]; then
