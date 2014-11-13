@@ -212,7 +212,8 @@ case "$1" in
 			if [ $? -eq 0 ]
    			then
     			search=`echo $2 | sed 's/-/+/g'`
-				info=`echo $search | grep -o "S[0-9][0-9]E[0-9][0-9]"`	
+				info=`echo $search | grep -o "S[0-9][0-9]E[0-9][0-9]"`
+			fi	
 		fi 
 		magnet=$(cat $HOME/.series_link | grep $info | grep -om 1 "magnet:.*\" title=\"Down" | sed -e 's/\" title=\"Down//')
 		if [ "$OS" == "Darwin" ]; then
