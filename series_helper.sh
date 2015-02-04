@@ -217,6 +217,7 @@ case "$1" in
 			fi	
 		fi
 		# If there are still no Hits, exits
+		line=$(grep -E "No hits.|Database maintenance," $HOME/.series_link)
 		if [ $? -eq 0 ]
 		then
 			exit 1
