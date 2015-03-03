@@ -58,14 +58,15 @@ template_fim="
 	   		</td></tr></table>
 	   	</div>
 	   	<center>
-	   		<a href=\"https://www.dropbox.com/referrals/NTM2NDA1NTk\"><img id=\"errorimage\" src=\"https://www.dropbox.com/static/images/psychobox.png\"/></a> 
-		   	<div class=\"footer\">
+	   		<hr width=350> <br/>
+	   		<div class=\"footer\">
 		   		<small>
 		   			
 		   			Ultima Actualizacao: $TIMESTAMP<br/>
 		   			Storage: $STORAGE_FREE free / $STORAGE_TOTAL total <br/>
 		   			Provider: $OS $ARCH<br/>
 		   			IP cliente:<script type="text/javascript" src="http://l2.io/ip.js"></script><br />
+		   			<iframe src="https://dl.dropboxusercontent.com/u/364055/temperature_now.html" height=25 width=220 frameborder=0 scrolling=no>
 		   		</small>
 		   	</div>
 	   	</center>
