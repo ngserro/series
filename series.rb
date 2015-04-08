@@ -418,6 +418,13 @@ end
 ####################################
 # INICIO
 ####################################
+
+
+
+exit (0)
+
+
+
 begin
 	beginning = Time.now
 	# Abre o ficheiro $index_file_name e le as palavras chave, nome de serie e link correspondente.
