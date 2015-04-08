@@ -418,11 +418,32 @@ end
 ####################################
 # INICIO
 ####################################
+begin
+	arg=ARGV[0]
 
+	case arg
+	when "-p","-ps"
+		puts "ps"
+	else
+		puts "Sintaxe: series.rb [OPCAO] <nome da serie ou ficheiro>
 
+	Opcoes:
+	  : Retorna nome do ficheiro correctamente formatado
+	-p: Proximo Episodio
+	-u: Ultimo Episodio
+	-e: Estatisticas da Serie
+	-l: Lista episodios
+	-s: Retorna nome do ficheiro formatado em versao curta
+	Xs: Versao curta"
+			exit(3)
+	end
 
-exit (0)
+	exit (0)
 
+rescue Interrupt => e
+	puts "\nTempo decorrido: #{Time.now - beginning} segundos\n"
+	exit(1)
+end
 
 
 begin
@@ -630,3 +651,8 @@ rescue Interrupt => e
 	puts "\nTempo decorrido: #{Time.now - beginning} segundos\n"
 	exit(1)
 end
+
+
+
+
+##### DEV
