@@ -27,6 +27,7 @@ require 'net/http'
 
 require 'smarter_csv'
 require 'amatch'
+require 'slop'
 
 include Amatch
 
@@ -142,6 +143,7 @@ end
 
 ############## MAIN ##############
 
+
 begin
 
 	# Time for benchmark
@@ -176,19 +178,14 @@ begin
 		$offline=""
 	end
 
-	# Initializes show and episodes based on ARGV[1]
-	if ARGV[0].downcase == "-f" then
-		name=ARGV[1].scan(/(.*)[sS]\d+/)[0][0]
-	else
-		name=ARGV[1]
-	end
-	show=get_show(name)
-	episodes_list=get_episodes(show,"local")
-
 	case ARGV[0].downcase
 
 	# Returns correctly formated name
 	when "-f"
+
+		name=ARGV[1].scan(/(.*)[sS]\d+/)[0][0]
+		show=get_show(name)
+		episodes_list=get_episodes(show,"local")
 
 		# Get file extension
 		begin
@@ -197,10 +194,6 @@ begin
 	 	rescue
 	  		extension = "".to_s()
 	  	end
-
-		name=ARGV[1].scan(/(.*)[sS]\d+/)[0][0]
-		show=get_show(name)
-		episodes_list=get_episodes(show,"local")
 
 	  	# Get file TV show season and episode number
 		season=ARGV[1].scan(/[sS]\d+/)[0].scan(/\d+/)
@@ -217,6 +210,8 @@ begin
 	# Next episode
 	when "-n","-nx"
 		
+		show=get_show(ARGV[1])
+		episodes_list=get_episodes(show,"local")
 		search_episode=(episodes_list.find {|episode| Date.parse(episode[:airdate]) > Date.today})
 		# If episode not found, forces download mode
 		if search_episode == nil then
@@ -232,6 +227,8 @@ begin
 	# Last episode
 	when "-l","-lx"
 		
+		show=get_show(ARGV[1])
+		episodes_list=get_episodes(show,"local")
 		search_episode=(episodes_list.reverse.find {|episode| Date.parse(episode[:airdate]) < Date.today})
 		# If episode not found, forces download mode
 		if search_episode == nil then
@@ -247,6 +244,8 @@ begin
 	# TV show statistics
 	when "-s"
 
+		show=get_show(ARGV[1])
+		episodes_list=get_episodes(show,"local")
 		puts $offline if $offline != ""
 		puts "Name: "+show[:title]
 		puts "Network: "+show[:network]
@@ -264,6 +263,8 @@ begin
 
 	# Show all episodes
 	when "-a","-ax"
+		show=get_show(ARGV[1])
+		episodes_list=get_episodes(show,"local")
 		episodes_list.each { |episode| output(show,episode) }
 		puts $offline if $offline != ""
 	else
