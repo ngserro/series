@@ -24,17 +24,12 @@
 require 'open-uri'
 require 'date'
 require 'net/http'
-
 require 'smarter_csv'
 require 'amatch'
-require 'slop'
 
 include Amatch
 
-############ SETTINGS ############
-
-$benchmark=1		# Toggle execution time display
-$temp_file="/tmp/"	# Temporary file location
+$library="/media/ELEMENTS/TV_Shows/"
 
 ######## START FUNCTIONS #########
 
@@ -52,13 +47,6 @@ def internet_connection?(url)
 	end 
 end
 
-# Cria directorio se nao existir
-def create_if_missing *names
-	names.each do |name| Dir.mkdir(name) unless File.directory?(name)
-	end
-end 
-
-
 # Returns hash with TV show information, exits otherwise
 def get_show (name)
 
@@ -66,29 +54,29 @@ def get_show (name)
 	name.gsub!(/\W/,'')
 
 	# Index file doesnt exist and we are offline :(
-	if File.exist?($temp_file+'allshows.txt') == false and $offline=="No internet connection."
+	if File.exist?('/tmp/allshows.txt') == false and $offline=="No internet connection."
 		puts "No index file and no internet connection."
 		exit 4
 	end
 
 	# Index file doesnt exist, but we are online. Download to file and parse
-	if File.exist?($temp_file+'allshows.txt') == false and $offline!="No internet connection."
+	if File.exist?('/tmp/allshows.txt') == false and $offline!="No internet connection."
 		open("http://epguides.com/common/allshows.txt") { |io| $html_csv = io.read }
-		File.open($temp_file+'allshows.txt', 'w') {|f| f.write($html_csv) }
+		File.open('/tmp/allshows.txt', 'w') {|f| f.write($html_csv) }
 	end
 
 	# Read file and create array of hashes
-	file = File.open($temp_file+'allshows.txt', :encoding => 'Windows-1252')
+	file = File.open('/tmp/allshows.txt', :encoding => 'Windows-1252')
 	shows_list = SmarterCSV.process(file)
 
 	# Fuzzy search. If not found updates file and if still not found, removes "The" from name
 	fuzzy_test = JaroWinkler.new(name)
-	search_show=(shows_list.detect {|show| fuzzy_test.match(show[:directory].to_s) > 0.9})
+	search_show=(shows_list.detect {|show| fuzzy_test.match(show[:directory].to_s) > 0.94})
 	if search_show == nil then
 		name=name.downcase.gsub("the","")
 		fuzzy_test = JaroWinkler.new(name)
 	end
-	search_show=(shows_list.detect {|show| fuzzy_test.match(show[:directory].to_s) > 0.9})
+	search_show=(shows_list.detect {|show| fuzzy_test.match(show[:directory].to_s) > 0.94})
 
 	if search_show == nil then
 		puts "TV Show not found."+$offline
@@ -102,7 +90,7 @@ end
 def get_episodes(show,mode)
 
 	link = "http://epguides.com/common/exportToCSV.asp?rage="+show[:tvrage].to_s.chomp
-	filename=$temp_file+show[:tvrage].to_s+".txt"
+	filename='/tmp/'+show[:tvrage].to_s+".txt"
 
 	# Episode file doesnt exist and we are offline :(
 	if File.exist?(filename) == false and $offline=="No internet connection."
@@ -130,12 +118,31 @@ def get_episodes(show,mode)
 
 end
 
+# Returns missing episodes in library
+def missing(show)
+	# Get last existing and parse information
+	#cmd = "/bin/ls -1R "+$library+" | grep -i \""+show+" - \" | tail -1"
+	cmd="cat /Users/nserro/Dropbox/log/lista.log | grep -i \""+show[:title]+" - \" | tail -1"
+	last_existing = `#{cmd}`
+
+	# Get file TV show season and episode number
+	season=last_existing.scan(/[sS]\d+/)[0].scan(/\d+/)
+	episode_num=last_existing.scan(/[eE]\d+/)[0].scan(/\d+/)
+	episodes_list=get_episodes(show,"local")
+	search_episode=(episodes_list.select {|episode| episode[:special?]=="n" and (episode[:episode] > episode_num[0].to_i and episode[:season] >= season[0].to_i and Date.parse(episode[:airdate]) < Date.today)})
+	
+	return search_episode
+end
+
+# Print episode
 def output(show,episode)
-	# Print output, only for -n and -l options
-	if $short == 0 then
-		puts show[:title]+" - S"+episode[:season].to_s.rjust(2,'0')+"E"+episode[:episode].to_s.rjust(2,'0')+" - "+episode[:title]+", "+Date.parse(episode[:airdate]).strftime("%A, %d %b %Y").to_s
-	else
-		puts show[:title]+" - S"+episode[:season].to_s.rjust(2,'0')+"E"+episode[:episode].to_s.rjust(2,'0')+", "+Date.parse(episode[:airdate]).strftime("%a, %d %b").to_s
+	# Print output
+	for i in 0...episode.length do
+		if $short == 0 then
+			puts show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+" - "+episode[i][:title]+", "+Date.parse(episode[i][:airdate]).strftime("%A, %d %b %Y").to_s
+		else
+			puts show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+", "+Date.parse(episode[i][:airdate]).strftime("%a, %d %b").to_s
+		end
 	end
 end
 
@@ -143,12 +150,10 @@ end
 
 ############## MAIN ##############
 
-
 begin
-
 	# Time for benchmark
 	beginning = Time.now
-
+	
 	# Validate number of args
 	if ARGV.length < 2 and ARGV[0] != "-h"
 		puts "Invalid number of arguments. See 'series -h'."
@@ -162,14 +167,14 @@ begin
 		$short=0
 	end
 
-	# Merges remaining arguments
-	if ARGV.length >= 2 then
-		aux=""
-		for i in 1..(ARGV.length-1) do
-			aux << ARGV[i]
-		end
-		ARGV[1] = aux
+	#Test if benchmark flag is set
+	if ARGV[0].downcase =~ /-.b/ 
+		$benchmark=1	
+	else
+		$benchmark=0
 	end
+
+	search_episode=Array.new
 
 	# Tests internet conectivity
 	if internet_connection?("http://www.icann.org/") == false
@@ -181,92 +186,114 @@ begin
 	case ARGV[0].downcase
 
 	# Returns correctly formated name
-	when "-f"
+	when "-f","-fb"
+		for i in 1...ARGV.length do
+			name=ARGV[i].scan(/(.*)[sS]\d+/)[0][0]
+			show=get_show(name)
+			episodes_list=get_episodes(show,"local")
 
-		name=ARGV[1].scan(/(.*)[sS]\d+/)[0][0]
-		show=get_show(name)
-		episodes_list=get_episodes(show,"local")
+			# Get file extension
+			begin
+			  	extension = ARGV[1][ARGV[1].rindex('.'),ARGV[1].length]
+			  	extension = "".to_s() if ARGV[1].length-ARGV[1].rindex('.') > 5
+		 	rescue
+		  		extension = "".to_s()
+		  	end
 
-		# Get file extension
-		begin
-		  	extension = ARGV[1][ARGV[1].rindex('.'),ARGV[1].length]
-		  	extension = "".to_s() if ARGV[1].length-ARGV[1].rindex('.') > 5
-	 	rescue
-	  		extension = "".to_s()
-	  	end
+		  	# Get file TV show season and episode number
+			season=ARGV[1].scan(/[sS]\d+/)[0].scan(/\d+/)
+			episode_num=ARGV[1].scan(/[eE]\d+/)[0].scan(/\d+/)
 
-	  	# Get file TV show season and episode number
-		season=ARGV[1].scan(/[sS]\d+/)[0].scan(/\d+/)
-		episode_num=ARGV[1].scan(/[eE]\d+/)[0].scan(/\d+/)
-
-		search_episode=(episodes_list.find {|episode| episode[:episode] == episode_num[0].to_i and episode[:season] == season[0].to_i})
-		if search_episode == nil then
-			puts "Episode not found. "+$offline
-			exit 7
-		else
-			puts show[:title]+" - S"+search_episode[:season].to_s.rjust(2,'0')+"E"+search_episode[:episode].to_s.rjust(2,'0')+" - "+search_episode[:title]+extension
+			search_episode<<(episodes_list.find {|episode| episode[:episode] == episode_num[0].to_i and episode[:season] == season[0].to_i})
+			if search_episode[0] == nil then
+				puts "Episode not found for "+show[:title]+". "+$offline
+				exit 7
+			else
+				puts show[:title]+" - S"+search_episode[:season].to_s.rjust(2,'0')+"E"+search_episode[:episode].to_s.rjust(2,'0')+" - "+search_episode[:title]+extension
+			end
 		end
 
 	# Next episode
-	when "-n","-nx"
-		
-		show=get_show(ARGV[1])
-		episodes_list=get_episodes(show,"local")
-		search_episode=(episodes_list.find {|episode| Date.parse(episode[:airdate]) > Date.today})
-		# If episode not found, forces download mode
-		if search_episode == nil then
-			episodes_list=get_episodes(show,"download")
-			search_episode=(episodes_list.find {|episode| Date.parse(episode[:airdate]) > Date.today})
+	when "-n","-nx","-nb","-nxb","-nbx"
+		for i in 1...ARGV.length do
+			show=get_show(ARGV[i].dup)
+			episodes_list=get_episodes(show,"local")
+			search_episode<<(episodes_list.find {|episode| episode[:special?]=="n" and Date.parse(episode[:airdate]) >= Date.today})
+			# If episode not found, forces download mode
+			if search_episode[0] == nil then
+				episodes_list=get_episodes(show,"download")
+				search_episode<<(episodes_list.find {|episode| episode[:special?]=="n" and Date.parse(episode[:airdate]) >= Date.today})
+			end
+			if search_episode[0] == nil then
+				puts "Episode not scheduled for "+show[:title]+". "+$offline
+				exit 8
+			end
+			output(show,search_episode)
 		end
-		if search_episode == nil then
-			puts "Episode not scheduled. "+$offline
-			exit 8
+
+	# Missing episodes
+	when "-m","-mx","-mb","-mxb","-mbx"
+		for i in 1...ARGV.length do
+			show=get_show(ARGV[i].dup)
+			missing_episodes=missing(show)
+			if missing_episodes!=nil then
+				output(show,missing_episodes)
+			end
 		end
-		output(show,search_episode)
+
+	# Download episode
+	when "-d","-dx","-db","-dxb","-dbx"
+		puts "downloading"
 
 	# Last episode
-	when "-l","-lx"
+	when "-l","-lx","-lb","-lxb","-lbx"
 		
-		show=get_show(ARGV[1])
-		episodes_list=get_episodes(show,"local")
-		search_episode=(episodes_list.reverse.find {|episode| Date.parse(episode[:airdate]) < Date.today})
-		# If episode not found, forces download mode
-		if search_episode == nil then
-			episodes_list=get_episodes(show,"download")
-			search_episode=(episodes_list.find {|episode| Date.parse(episode[:airdate]) < Date.today})
+		for i in 1...ARGV.length do
+			show=get_show(ARGV[i].dup)
+			episodes_list=get_episodes(show,"local")
+			search_episode<<(episodes_list.reverse.find {|episode| episode[:special?]=="n" and Date.parse(episode[:airdate]) < Date.today})
+			# If episode not found, forces download mode
+			if search_episode[0] == nil then
+				episodes_list=get_episodes(show,"download")
+				search_episode<<(episodes_list.find {|episode| episode[:special?]=="n" and Date.parse(episode[:airdate]) < Date.today})
+			end
+			if search_episode[0] == nil then
+				puts "Episode not aired for "+show[:title]+". "+$offline
+				exit 8
+			end
+			output(show,search_episode)
 		end
-		if search_episode == nil then
-			puts "Episode not scheduled. "+$offline
-			exit 8
-		end
-		output(show,search_episode)
 
 	# TV show statistics
-	when "-s"
-
-		show=get_show(ARGV[1])
-		episodes_list=get_episodes(show,"local")
-		puts $offline if $offline != ""
-		puts "Name: "+show[:title]
-		puts "Network: "+show[:network]
-		puts "Country: "+show[:country]
-		puts "Seasons: "+episodes_list.last[:season].to_s
-		puts "Episodes: "+episodes_list.last[:number].to_s
-		puts "First: S"+episodes_list.first[:season].to_s.rjust(2,'0')+"E"+episodes_list.first[:episode].to_s.rjust(2,'0')+" - "+episodes_list.first[:title].to_s+", "+Date.parse(episodes_list.first[:airdate]).to_s
-		puts "Last: S"+episodes_list.last[:season].to_s.rjust(2,'0')+"E"+episodes_list.last[:episode].to_s.rjust(2,'0')+" - "+episodes_list.last[:title].to_s+", "+Date.parse(episodes_list.last[:airdate]).to_s
-		next_episode=(episodes_list.find {|episode| Date.parse(episode[:airdate]) > Date.today})
-		if next_episode == nil then
-			puts "Next: Episode not scheduled."
-		else
-			puts "Next: S"+next_episode[:season].to_s.rjust(2,'0')+"E"+next_episode[:episode].to_s.rjust(2,'0')+" - "+next_episode[:title].to_s+", "+Date.parse(next_episode[:airdate]).to_s
+	when "-s","-sb"
+		for i in 1...ARGV.length do
+			show=get_show(ARGV[i].dup)
+			episodes_list=get_episodes(show,"local")
+			puts $offline if $offline != ""
+			puts "Name: "+show[:title]
+			puts "Network: "+show[:network]
+			puts "Country: "+show[:country]
+			puts "Seasons: "+episodes_list.last[:season].to_s
+			puts "Episodes: "+episodes_list.size.to_s
+			puts "First: S"+episodes_list.first[:season].to_s.rjust(2,'0')+"E"+episodes_list.first[:episode].to_s.rjust(2,'0')+" - "+episodes_list.first[:title].to_s+", "+Date.parse(episodes_list.first[:airdate]).to_s
+			puts "Last: S"+episodes_list.last[:season].to_s.rjust(2,'0')+"E"+episodes_list.last[:episode].to_s.rjust(2,'0')+" - "+episodes_list.last[:title].to_s+", "+Date.parse(episodes_list.last[:airdate]).to_s
+			next_episode=(episodes_list.find {|episode| episode[:special?]=="n" and Date.parse(episode[:airdate]) >= Date.today})
+			if next_episode == nil then
+				puts "Next: Episode not scheduled for "+show[:title]+"."
+			else
+				puts "Next: S"+next_episode[:season].to_s.rjust(2,'0')+"E"+next_episode[:episode].to_s.rjust(2,'0')+" - "+next_episode[:title].to_s+", "+Date.parse(next_episode[:airdate]).to_s
+			end
 		end
 
 	# Show all episodes
-	when "-a","-ax"
-		show=get_show(ARGV[1])
-		episodes_list=get_episodes(show,"local")
-		episodes_list.each { |episode| output(show,episode) }
-		puts $offline if $offline != ""
+	when "-a","-ax","-ab","-axb","-abx"
+		for i in 1...ARGV.length do
+			show=get_show(ARGV[i].dup)
+			episodes_list=get_episodes(show,"local")
+			episodes_list.each { |episode| search_episode<<episode }
+			output(show,search_episode)
+			puts $offline if $offline != ""
+		end
 	else
 		puts "usage: series <option>[x] <tv show name or filename>
 
@@ -276,7 +303,11 @@ options:
 	 -l: Last episode
 	 -s: TV show statistics
 	 -a: Show all episodes
-	[x]: Short output"
+	 -m: Show missing episode list
+	 -d: Download episode
+	[x]: Short output mode
+	[b]: Benchmark mode"
+
 		exit 3
 	end
 
