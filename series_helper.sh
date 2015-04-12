@@ -82,8 +82,8 @@ template_fim="
 
 function falta {
 	
-	$bin_path/series.rb -u $1 | sed 's/\(.*\) - \(.*\)/\1/' > $HOME/.temp.out
-	num_serie=`$bin_path/series.rb -u $1 | sed 's/\(.*\) - \(.*\)/\1/' | sed 's/\(.*\) - S//'| sed 's/\0//' | sed 's/E\(.*\)//'`
+	$bin_path/series.rb -l $1 | sed 's/\(.*\) - \(.*\)/\1/' > $HOME/.temp.out
+	num_serie=`$bin_path/series.rb -l $1 | sed 's/\(.*\) - \(.*\)/\1/' | sed 's/\(.*\) - S//'| sed 's/\0//' | sed 's/E\(.*\)//'`
 
 	# Processamento da entrada
 	in=`echo $1 | sed 's/_/ /g'`
@@ -118,10 +118,10 @@ function falta {
 	  	i=$((ultimo_existente+1)) 
 	  	while [ "$i" != "$ultimo_disponivel" ]
 	  	do
-			falta=`$bin_path/series.rb -s $1-s$num_serie-e$i`
+			falta=`$bin_path/series.rb -fx $1-s$num_serie-e$i`
 	    	if [[ "-html" == $2 ]]
 	    	then
-	    		falta=`$bin_path/series.rb $1-s$num_serie-e$i`
+	    		falta=`$bin_path/series.rb -f $1-s$num_serie-e$i`
 	    	fi
 	    	if [ "-s" == $2 ]
 	    	then
@@ -137,10 +137,10 @@ function falta {
 	    	fi  
 	    	i=$((i+1))
 	  	done
-	  	falta=`$bin_path/series.rb -s $1-s$num_serie-e$ultimo_disponivel`
+	  	falta=`$bin_path/series.rb -fx $1-s$num_serie-e$ultimo_disponivel`
 	 	if [[ "-html" == $2 ]]
 	  	then
-	    	falta=`$bin_path/series.rb $1-s$num_serie-e$ultimo_disponivel`
+	    	falta=`$bin_path/series.rb -f $1-s$num_serie-e$ultimo_disponivel`
 	  	fi
 	  	if [ "-s" == $2 ]
 	  	then
@@ -173,7 +173,7 @@ case "$1" in
 
 		for item in ${series[*]}
 		do
-	    	CMD=`$bin_path/series.rb -ps $item`
+	    	CMD=`$bin_path/series.rb -ns $item`
 			if [[ $CMD != *ERRO:* ]]
 			then
 		 		if [[ $2 == "-html" ]]
