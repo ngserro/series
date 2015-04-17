@@ -24,12 +24,24 @@
 require 'open-uri'
 require 'date'
 require 'net/http'
+require 'socket'
 require 'smarter_csv'
 require 'amatch'
 
 include Amatch
 
-$library="/media/ELEMENTS/TV_Shows/"
+# TODO:
+# --stash: stash the downloaded episodes in the library
+# --download: download episode
+# --update dropbox file
+
+
+######## CONFIGURATIONS #########
+
+$library_location="/media/ELEMENTS/TV_Shows/"
+$tmp_location="/tmp/"
+$use_notifications=true
+
 
 ######## START FUNCTIONS #########
 
@@ -53,20 +65,27 @@ def get_show (name)
 	# Remove all non char from name
 	name.gsub!(/\W/,'')
 
+	# Check myshows
+	# testa se o local tem a série
+	if File.exist?($tmp_location+'myshows.txt') == true
+		
+	end
+	# se sim define o ficheiro como o myshows, senão define como o allshows
+
 	# Index file doesnt exist and we are offline :(
-	if File.exist?('/tmp/allshows.txt') == false and $offline=="No internet connection."
+	if File.exist?($tmp_location+'allshows.txt') == false and $offline=="No internet connection."
 		puts "No index file and no internet connection."
 		exit 4
 	end
 
 	# Index file doesnt exist, but we are online. Download to file and parse
-	if File.exist?('/tmp/allshows.txt') == false and $offline!="No internet connection."
+	if File.exist?($tmp_location+'allshows.txt') == false and $offline!="No internet connection."
 		open("http://epguides.com/common/allshows.txt") { |io| $html_csv = io.read }
-		File.open('/tmp/allshows.txt', 'w') {|f| f.write($html_csv) }
+		File.open($tmp_location+'allshows.txt', 'w') {|f| f.write($html_csv) }
 	end
 
 	# Read file and create array of hashes
-	file = File.open('/tmp/allshows.txt', :encoding => 'Windows-1252')
+	file = File.open($tmp_location+'allshows.txt', :encoding => 'Windows-1252')
 	shows_list = SmarterCSV.process(file)
 
 	# Fuzzy search. If not found updates file and if still not found, removes "The" from name
@@ -90,7 +109,7 @@ end
 def get_episodes(show,mode)
 
 	link = "http://epguides.com/common/exportToCSV.asp?rage="+show[:tvrage].to_s.chomp
-	filename='/tmp/'+show[:tvrage].to_s+".txt"
+	filename=$tmp_location+show[:tvrage].to_s+".txt"
 
 	# Episode file doesnt exist and we are offline :(
 	if File.exist?(filename) == false and $offline=="No internet connection."
@@ -121,7 +140,7 @@ end
 # Returns missing episodes in library
 def missing(show)
 	# Get last existing and parse information
-	#cmd = "/bin/ls -1R "+$library+" | grep -i \""+show+" - \" | tail -1"
+	#cmd = "/bin/ls -1R "+$library_location+" | grep -i \""+show+" - \" | tail -1"
 	cmd="cat /Users/nserro/Dropbox/log/lista.log | grep -i \""+show[:title]+" - \" | tail -1"
 	last_existing = `#{cmd}`
 
@@ -129,7 +148,8 @@ def missing(show)
 	season=last_existing.scan(/[sS]\d+/)[0].scan(/\d+/)
 	episode_num=last_existing.scan(/[eE]\d+/)[0].scan(/\d+/)
 	episodes_list=get_episodes(show,"local")
-	search_episode=(episodes_list.select {|episode| episode[:special?]=="n" and (episode[:episode] > episode_num[0].to_i and episode[:season] >= season[0].to_i and Date.parse(episode[:airdate]) < Date.today)})
+	last_existing_info=(episodes_list.find {|episode| episode[:special?]=="n" and (episode[:episode] == episode_num[0].to_i and episode[:season] == season[0].to_i)})
+	search_episode=(episodes_list.select {|episode| episode[:special?]=="n" and ( Date.parse(episode[:airdate]) > Date.parse(last_existing_info[:airdate]) and Date.parse(episode[:airdate]) < Date.today)})
 	
 	return search_episode
 end
@@ -138,11 +158,24 @@ end
 def output(show,episode)
 	# Print output
 	for i in 0...episode.length do
-		if $short == 0 then
+		# If it's a new episode sends notification using boxcar.sh
+		if episode[i] != nil and $use_notifications==true and (Date.today-Date.parse(episode[i][:airdate])).to_i.between?(0, 1) then
+			cmd="boxcar.sh "+Socket.gethostname+" Series "+"\"Novo Episódio: #{show[:title]} - S#{episode[i][:season].to_s.rjust(2,'0')}E#{episode[i][:episode].to_s.rjust(2,'0')}\""
+			`#{cmd}`
+		end
+		if $short == 0 and episode[i] != nil then
 			puts show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+" - "+episode[i][:title]+", "+Date.parse(episode[i][:airdate]).strftime("%A, %d %b %Y").to_s
-		else
+		elsif episode[i] != nil
 			puts show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+", "+Date.parse(episode[i][:airdate]).strftime("%a, %d %b").to_s
 		end
+	end
+end
+
+# Download magnet correspondig to episode and send to torrent aplication
+def download(show,episode)
+	for i in 0...episode.length do
+		link = "https://thepiratebay.se/search/"+show[:directory]+"+S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+"+720p"
+		open(link) { |io| $html_csv = io.read }
 	end
 end
 
@@ -207,7 +240,6 @@ begin
 			search_episode<<(episodes_list.find {|episode| episode[:episode] == episode_num[0].to_i and episode[:season] == season[0].to_i})
 			if search_episode[0] == nil then
 				puts "Episode not found for "+show[:title]+". "+$offline
-				exit 7
 			else
 				puts show[:title]+" - S"+search_episode[:season].to_s.rjust(2,'0')+"E"+search_episode[:episode].to_s.rjust(2,'0')+" - "+search_episode[:title]+extension
 			end
@@ -226,9 +258,9 @@ begin
 			end
 			if search_episode[0] == nil then
 				puts "Episode not scheduled for "+show[:title]+". "+$offline
-				exit 8
 			end
 			output(show,search_episode)
+			search_episode=Array.new
 		end
 
 	# Missing episodes
@@ -241,9 +273,16 @@ begin
 			end
 		end
 
-	# Download episode
+	# Download missing
 	when "-d","-dx","-db","-dxb","-dbx"
-		puts "downloading"
+		for i in 1...ARGV.length do
+			show=get_show(ARGV[i].dup)
+			missing_episodes=missing(show)
+			if missing_episodes!=nil then
+				output(show,missing_episodes)
+			end
+			download(show,missing_episodes)
+		end
 
 	# Last episode
 	when "-l","-lx","-lb","-lxb","-lbx"
@@ -252,16 +291,15 @@ begin
 			show=get_show(ARGV[i].dup)
 			episodes_list=get_episodes(show,"local")
 			search_episode<<(episodes_list.reverse.find {|episode| episode[:special?]=="n" and Date.parse(episode[:airdate]) < Date.today})
-			# If episode not found, forces download mode
 			if search_episode[0] == nil then
 				episodes_list=get_episodes(show,"download")
 				search_episode<<(episodes_list.find {|episode| episode[:special?]=="n" and Date.parse(episode[:airdate]) < Date.today})
 			end
 			if search_episode[0] == nil then
 				puts "Episode not aired for "+show[:title]+". "+$offline
-				exit 8
 			end
 			output(show,search_episode)
+			search_episode=Array.new
 		end
 
 	# TV show statistics
@@ -304,7 +342,6 @@ options:
 	 -s: TV show statistics
 	 -a: Show all episodes
 	 -m: Show missing episode list
-	 -d: Download episode
 	[x]: Short output mode
 	[b]: Benchmark mode"
 
