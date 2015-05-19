@@ -265,7 +265,7 @@ case "$1" in
 				cd $2
 				
 				#Move ficheiros para a raiz e apaga pastas
- 				find . -iregex '.*\(srt\|avi\|mkv\|mpg\|mpeg\|mp4\|m4v\|wmv\)' -exec mv "{}" . \; 2> /dev/null
+ 				find . -iregex '.*\(srt\|avi\|mkv\|mpg\|mpeg\|mp4\|m4v\|wmv\)' -not -path '*/*ample*/*' -exec mv "{}" . \; 2> /dev/null
 		
 				echo "################" >> $log
 				date +'%d-%m-%Y-%H:%M' >> $log
