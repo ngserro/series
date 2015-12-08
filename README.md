@@ -13,7 +13,7 @@ You can find information on what each file does in [Configuration](https://githu
 * An internet connection
 * Ruby
 
-Although `series.rb` works on any OS that has ruby installed, the helper script `series_helper.sh` will only work in a Unix like OS.
+Although `series.rb` works on any OS that has ruby installed, the helper script `helper.sh` will only work in a Unix like OS.
 
 Before you download anything you should make sure that you have ruby installed.
 Example for debian like OS:
