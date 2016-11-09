@@ -67,9 +67,9 @@ case "$1" in
 
 		template_end="
 		<br /><h4>Links:</h4><p>
-		<a href="https://meusitio.ddns.net:25050">Couch Potato</a><p>
-		<a href="https://meusitio.ddns.net:20443/transmission/web/">Transmission</a><p>
-		<a href="https://dl.dropboxusercontent.com/u/364055/temperatura.html">Temperatura</a><p>
+		<a href="https://alfama.ddns.net:25050">Couch Potato</a><p>
+		<a href="https://alfama.ddns.net:20443/transmission/web/">Transmission</a><p>
+		<a href="https://series.htmldrop.com/temperatura.html">Temperatura</a><p>
 		</font> </td></tr></table> </div> <center> <hr size="1" width="25%"> 
 			   		<div class=\"footer\">
 				   		<small>
@@ -86,8 +86,11 @@ case "$1" in
 		</html>
 		"
 
-		next=`/home/pi/bin/series/series.rb -nx`
-		missing=`/home/pi/bin/series/series.rb -mx`
+		eval binary=$binary_location"series.rb"
+		next=`"$binary" -nx`
+		#next=$binary_location`series.rb -nx`
+		missing=`"$binary" -mx`
+		#missing=`$binary_location`series.rb -mx`
 
 		echo $template_beginning > /tmp/series.html
 		echo -e "$missing" | sed  -e 's/$/<\/p>/' >> /tmp/series.html
@@ -95,7 +98,7 @@ case "$1" in
 		echo -e "$next" | grep -v "Episode not scheduled" | sed  -e 's/$/<\/p>/' >> /tmp/series.html
 		echo $template_end >> /tmp/series.html
 
-		$HOME/bin/dropbox_uploader.sh upload /tmp/series.html /Public/series.html
+		$HOME/bin/dropbox_uploader.sh upload /tmp/series.html /Apps/HTMLDrop/series/series.html
 		
 		exit 0
 	;;
