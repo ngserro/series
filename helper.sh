@@ -150,7 +150,7 @@ case "$1" in
 
 					# Creates folder and moves
 					nome_serie=`echo $novo_nome | sed 's/\( - S.*\)//'`
-					num_serie=`echo $novo_nome | sed 's/\(.*\) - \(.*\)/\1/' | sed 's/\(.*\) - S//'| sed 's/\0//' | sed 's/E\(.*\)//'`
+					num_serie=$((10#`echo $novo_nome | sed 's/\(.*\) - \(.*\)/\1/' | sed 's/\(.*\) - S//' | sed 's/E\(.*\)//'`))
 					mkdir -p $destino"/"$nome_serie"/Season "$num_serie
 					echo "mv $2/$novo_nome $destino$nome_serie/Season $num_serie" >> $log
 					#mv $2/"$novo_nome" $destino$nome_serie"/Season "$num_serie
