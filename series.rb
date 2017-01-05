@@ -89,7 +89,7 @@ def get_show (name)
 	# Check myshows
 	if File.exist?($tmp_location+'myshows.txt') == true
 		# Read file and create array of hashes
-		file = File.open($tmp_location+'myshows.txt', :encoding => 'Windows-1252')
+		file = File.open($tmp_location+'myshows.txt', :encoding => 'UTF-8')
 		shows_list = SmarterCSV.process(file)
 		search_show=get_show_search_list(name,shows_list)
 		if search_show != nil then
