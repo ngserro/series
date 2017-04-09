@@ -1,4 +1,4 @@
-#!/usr/bin/ruby -KU
+#!/usr/bin/ruby -KUW0
 
 =begin
   * Name: series.rb
