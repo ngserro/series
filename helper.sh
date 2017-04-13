@@ -67,9 +67,7 @@ case "$1" in
 
 		template_end="
 		<br /><h4>Links:</h4><p>
-		<a href="https://alfama.ddns.net:25050">Couch Potato</a><p>
-		<a href="https://alfama.ddns.net:20443/transmission/web/">Transmission</a><p>
-		<a href="https://series.htmldrop.com/temperatura.html">Temperatura</a><p>
+		<a href="https://ngserro.github.io/temperatura.html">Temperatura</a><p>
 		</font> </td></tr></table> </div> <center> <hr size="1" width="25%"> 
 			   		<div class=\"footer\">
 				   		<small>
@@ -98,8 +96,14 @@ case "$1" in
 		echo -e "$next" | grep -v "Episode not scheduled" | sed  -e 's/$/<\/p>/' >> /tmp/series.html
 		echo $template_end >> /tmp/series.html
 
-		$HOME/bin/dropbox_uploader.sh upload /tmp/series.html /Apps/HTMLDrop/series/series.html
-		
+		#$HOME/bin/dropbox_uploader.sh upload /tmp/series.html /Apps/HTMLDrop/series/series.html
+		cd $HOME/git/ngserro.github.io
+		git pull
+		cp -f /tmp/series.html $HOME/git/ngserro.github.io/series.html
+		git add --all
+		git commit -m "Update"
+		git push
+
 		exit 0
 	;;
 
