@@ -210,7 +210,7 @@ end
 def download(show,episode)
 	for i in 0...episode.length do
 		magnet=nil
-		link = "https://thepiratebay.se/search/"+show[:title]+"+S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+"+720p"
+		link = "https://thepiratebay.se/search/"+show[:title]+"+S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+"+720p+x264"
 		cmd="wget --quiet --no-check-certificate "+link+" -O - "
 		result = `#{cmd}`
 		magnet=result.to_s.match(/magnet:.*?(?=".title)/)
