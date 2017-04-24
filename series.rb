@@ -155,7 +155,12 @@ def get_episodes(show,mode)
 	end
 
 	# Read file and create array of hashes to return
+	file = File.read(filename)
+	# Fixes inexistent airdate field	
+	file_fixed = file.gsub(/,\s*,/, ",UNAIRED,")
+	File.open(filename, "w") {|file| file.puts file_fixed }
 	file = File.open(filename)
+
 	episodes_list = SmarterCSV.process(file)
 	
 	puts "@get_episodes: episodes_list: "+episodes_list.to_s if $opts[:verbose] == true
