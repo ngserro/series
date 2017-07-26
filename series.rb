@@ -314,7 +314,7 @@ EOS
 			end
 
 			if search_episode[0] == nil then
-				puts "Episode not scheduled for "+show[:title]+". "+$offline
+				puts show[:title]+" has no scheduled episodes. "+$offline
 				next
 			end
 			output(show,search_episode)
