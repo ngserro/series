@@ -55,7 +55,6 @@ def internet_connection?(url)
 	end 
 end
 
-
 # Search parsed "show_list" for tv show with "name"
 def get_show_search_list(name,shows_list)
 
@@ -74,7 +73,6 @@ def get_show_search_list(name,shows_list)
 	
 	return search_show
 end
-
 
 # Returns hash with TV show information, exits otherwise
 def get_show (name)
@@ -131,8 +129,6 @@ end
 # Returns array of hashes with episode information for a given show
 def get_episodes(show,mode)
 
-	#link = "http://epguides.com/common/exportToCSV.asp?rage="+show[:tvrage].to_s.chomp
-	#filename=$tmp_location+show[:tvrage].to_s+".txt"
 	link = "http://epguides.com/common/exportToCSVmaze.asp?maze="+show[:tvmaze].to_s.chomp
 	filename=$tmp_location+show[:tvmaze].to_s+".txt"
 	
@@ -172,7 +168,6 @@ end
 def missing(show)
 	# Get last existing and parse information
 	cmd = "/bin/ls -1R "+$library_location+" | grep -i \""+show[:title]+" - \" | tail -1"
-	#cmd="cat $HOME/Dropbox/log/lista.log | grep -i \""+show[:title]+" - \" | tail -1"
 	last_existing = `#{cmd}`
 
 	# Get file TV show season and episode number
@@ -191,6 +186,17 @@ def missing(show)
 	return search_episode
 end
 
+# Returns last episode from TV Show
+def last(episodes_list)
+	last_episode=Array.new
+	last_episode<<(episodes_list.reverse.find {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) < Date.today})
+	if last_episode[0] == nil then
+		episodes_list=get_episodes(show,"download")
+		last_episode<<(episodes_list.reverse.find {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) < Date.today})
+	end
+	return last_episode
+end
+
 # Print episode
 def output(show,episode)
 	# Print output
@@ -204,9 +210,9 @@ def output(show,episode)
 			`#{cmd}`
 		end
 		if $opts[:short] == false and episode[i] != nil then
-			puts show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+" - "+episode[i][:title]+", "+Date.parse(episode[i][:airdate]).strftime("%A, %d %b %Y").to_s
+			return show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+" - "+episode[i][:title]+", "+Date.parse(episode[i][:airdate]).strftime("%A, %d %b %Y").to_s
 		elsif episode[i] != nil
-			puts show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+", "+Date.parse(episode[i][:airdate]).strftime("%a, %d %b").to_s
+			return show[:title]+" - S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+", "+Date.parse(episode[i][:airdate]).strftime("%a, %d %b").to_s
 		end
 	end
 end
@@ -317,8 +323,20 @@ EOS
 				puts show[:title]+" has no scheduled episodes. "+$offline
 				next
 			end
-			output(show,search_episode)
-			search_episode=Array.new
+			puts output(show,search_episode)
+		end
+	end
+
+	# Last episode
+	if $opts[:last]==true then	
+		for i in 0...ARGV.length do
+			show=get_show(ARGV[i].dup)
+			episodes_list=get_episodes(show,"local")
+			last_episode=last(episodes_list)
+			if last_episode[0] == nil then
+				puts "Episode not aired for "+show[:title]+". "+$offline
+			end
+			puts output(show,last_episode)
 		end
 	end
 
@@ -328,7 +346,7 @@ EOS
 			show=get_show($followed_shows[i].dup)
 			missing_episodes=missing(show)
 			if missing_episodes!=nil then
-				output(show,missing_episodes)
+				puts output(show,missing_episodes)
 			end
 		end
 	end
@@ -346,37 +364,20 @@ EOS
 		end
 	end
 
-	# Last episode
-	if $opts[:last]==true then	
-		for i in 0...ARGV.length do
-			show=get_show(ARGV[i].dup)
-			episodes_list=get_episodes(show,"local")
-			search_episode<<(episodes_list.reverse.find {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) < Date.today})
-			if search_episode[0] == nil then
-				episodes_list=get_episodes(show,"download")
-				search_episode<<(episodes_list.reverse.find {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) < Date.today})
-			end
-			if search_episode[0] == nil then
-				puts "Episode not aired for "+show[:title]+". "+$offline
-			end
-			output(show,search_episode)
-			search_episode=Array.new
-		end
-	end
-
 	# TV show statistics
 	if $opts[:statistics]==true then
 		for i in 0...ARGV.length do
 			show=get_show(ARGV[i].dup)
 			episodes_list=get_episodes(show,"local")
+			last_episode=last(episodes_list)
 			puts $offline if $offline != ""
 			puts "Name: "+show[:title]
 			puts "Network: "+show[:network]
 			puts "Country: "+show[:country]
-			puts "Seasons: "+episodes_list.last[:season].to_s
+			puts "Seasons: "+last_episode.last[:season].to_s
 			puts "Episodes: "+episodes_list.size.to_s
 			puts "First: S"+episodes_list.first[:season].to_s.rjust(2,'0')+"E"+episodes_list.first[:episode].to_s.rjust(2,'0')+" - "+episodes_list.first[:title].to_s+", "+Date.parse(episodes_list.first[:airdate]).to_s
-			puts "Last: S"+episodes_list.last[:season].to_s.rjust(2,'0')+"E"+episodes_list.last[:episode].to_s.rjust(2,'0')+" - "+episodes_list.last[:title].to_s+", "+Date.parse(episodes_list.last[:airdate]).to_s
+			puts "Last: "+output(show,last_episode).scan(/S\d{2}E.*/).first
 			next_episode=(episodes_list.find {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) >= Date.today})
 			if next_episode == nil then
 				puts "Next: Episode not scheduled for "+show[:title]+"."
@@ -392,14 +393,13 @@ EOS
 			show=get_show(ARGV[i].dup)
 			episodes_list=get_episodes(show,"local")
 			episodes_list.each { |episode| search_episode<<episode }
-			output(show,search_episode)
+			puts output(show,search_episode)
 			puts $offline if $offline != ""
 		end
 	end
 	
 	# Stash finished downloads
 	if $opts[:stash]==true then
-		
 	end
 	
 	if $opts[:benchmark] == true then
