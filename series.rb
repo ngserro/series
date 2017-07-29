@@ -181,9 +181,8 @@ def missing(show)
 		last_existing_info=(episodes_list.find {|episode| !episode[:number].to_s.match(/s/i) and (episode[:episode] == episode_num[0].to_i and episode[:season] == season[0].to_i)})
 		search_episode=(episodes_list.select {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and ( Date.parse(episode[:airdate]) > Date.parse(last_existing_info[:airdate]) and Date.parse(episode[:airdate]) < Date.today)  or (!episode[:number].to_s.match(/s/i)  and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) >= Date.parse(last_existing_info[:airdate]) and episode[:number]>last_existing_info[:number] and Date.parse(episode[:airdate]) < Date.today) }) 
 	end
-	
 	puts "@missing: search_episode: "+search_episode.to_s if $opts[:verbose] == true
-	return search_episode
+	return search_episode[0]
 end
 
 # Returns last episode from TV Show
