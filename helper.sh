@@ -99,7 +99,7 @@ case "$1" in
 		echo $template_beginning > /tmp/series.html
 		echo -e "$missing" | sed  -e 's/$/<\/p>/' >> /tmp/series.html
 		echo $template_midle >> /tmp/series.html
-		echo -e "$next" | grep -v "Episode not scheduled" | sed  -e 's/$/<\/p>/' >> /tmp/series.html
+		echo -e "$next" | grep -v "no scheduled episodes" | sed  -e 's/$/<\/p>/' >> /tmp/series.html
 		echo $template_end >> /tmp/series.html
 
 		#$HOME/bin/dropbox_uploader.sh upload /tmp/series.html /Apps/HTMLDrop/series/series.html
