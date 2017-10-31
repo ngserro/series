@@ -186,8 +186,9 @@ def missing(show)
 		last_existing_info=(episodes_list.find {|episode| !episode[:number].to_s.match(/s/i) and (episode[:episode] == episode_num[0].to_i and episode[:season] == season[0].to_i)})
 		search_episode=(episodes_list.select {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and ( Date.parse(episode[:airdate]) > Date.parse(last_existing_info[:airdate]) and Date.parse(episode[:airdate]) < Date.today)  or (!episode[:number].to_s.match(/s/i)  and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) >= Date.parse(last_existing_info[:airdate]) and episode[:number]>last_existing_info[:number] and Date.parse(episode[:airdate]) < Date.today) }) 
 	end
+	
 	puts "@missing: search_episode: "+search_episode.to_s if $opts[:verbose] == true
-	return search_episode[0]
+	return search_episode
 end
 
 # Print episode
@@ -214,10 +215,20 @@ end
 def download(show,episode)
 	for i in 0...episode.length do
 		magnet=nil
-		link = "https://thepiratebay.se/search/"+show[:title]+"+S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+"+720p+x264"
-		cmd="wget --quiet --no-check-certificate "+link+" -O - "
+		#link = "https://thepiratebay.se/search/"+show[:title]+"+S"+episode[i][:season].to_s.rjust(2,'0')+"E"+episode[i][:episode].to_s.rjust(2,'0')+"+720p+x264"
+		link = "http://"+$jackett_ip+":"+$jackett_port+"/api/v2.0/indexers/thepiratebay/results/torznab/api?t=tvsearch&cat=5040&q="+show[:title].gsub(" ","+")+"&season="+episode[i][:season].to_s.rjust(2,'0')+"&ep="+episode[i][:episode].to_s.rjust(2,'0')+"&size=1200000000&extended=1&apikey="+$jackett_api_key+"&offset=0&limit=5"
+		cmd="wget --quiet --no-check-certificate \""+link+"\" -O - "
 		result = `#{cmd}`
-		magnet=result.to_s.match(/magnet:.*?(?=".title)/)
+		parsed_result = ""
+		result.each_line do |line|
+    		if line.include? "265"
+   				parsed_result += ""
+			else
+				parsed_result +=line
+			end
+		end
+		#magnet=result.to_s.match(/magnet:.*?(?=".title)/)
+		magnet=result.to_s.match(/(?=url=")?magnet:.*?(?=")/)
 		cmd="/usr/bin/transmission-remote "+$transmission_ip+":"+$transmission_port+" -n "+$transmission_credentials+" -w "+$transmission_dlpath+" -a \""+magnet.to_s+"\""
 		p cmd
 		result = `#{cmd}`
