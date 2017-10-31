@@ -27,5 +27,10 @@ $transmission_dlpath='$HOME/Downloads/Series'
 $transmission_port='26001'
 $transmission_ip='127.0.0.1'
 
+# Jackett configurations
+$jackett_api_key='asddasdasdasd'
+$jackett_port='9117'
+$jackett_ip='localhost'
+
 
 
