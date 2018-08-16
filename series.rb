@@ -39,6 +39,7 @@ rescue
 	exit 1
 end
 
+
 ######## START FUNCTIONS #########
 
 # Checks if internet conection exists
@@ -96,6 +97,13 @@ def get_show (name)
 			puts "@get_show: search_show: "+search_show.to_s if $opts[:verbose] == true
 			return search_show
 		end
+	end
+
+	# Deletes allshows.txt if older than 2 weeks
+	file_time = File.ctime($tmp_location+'allshows.txt')
+	cache_time = Date.parse(Time.now.to_s) - 15
+	if Date.parse(file_time.to_s) < cache_time
+  		File.delete($tmp_location+'allshows.txt')
 	end
 
 	# Index file doesnt exist and we are offline :(
