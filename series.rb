@@ -323,6 +323,9 @@ EOS
 	if $opts[:next] == true then
 		for i in 0...$followed_shows.length do
 			show=get_show($followed_shows[i].dup)
+			if show == nil then 
+				break
+			end
 			episodes_list=get_episodes(show,"local")
 			search_episode[0]=(episodes_list.find {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) >= Date.today})
 			# If episode not found, forces download mode
@@ -344,6 +347,9 @@ EOS
 	if $opts[:missing]==true then
 		for i in 0...$followed_shows.length do
 			show=get_show($followed_shows[i].dup)
+			if show == nil then 
+				break
+			end
 			missing_episodes=missing(show)
 			if missing_episodes!=nil then
 				output(show,missing_episodes)
@@ -355,6 +361,9 @@ EOS
 	if $opts[:download]==true then
 		for i in 0...$followed_shows.length do
 			show=get_show($followed_shows[i].dup)
+			if show == nil then 
+				break
+			end
 			missing_episodes=missing(show)
 			if missing_episodes!=[] then
 				download(show,missing_episodes)
@@ -368,6 +377,9 @@ EOS
 	if $opts[:last]==true then	
 		for i in 0...ARGV.length do
 			show=get_show(ARGV[i].dup)
+			if show == nil then 
+				break
+			end
 			episodes_list=get_episodes(show,"local")
 			search_episode<<(episodes_list.reverse.find {|episode| !episode[:number].to_s.match(/s/i) and episode[:airdate]!="UNAIRED" and Date.parse(episode[:airdate]) < Date.today})
 			if search_episode[0] == nil then
@@ -386,6 +398,9 @@ EOS
 	if $opts[:statistics]==true then
 		for i in 0...ARGV.length do
 			show=get_show(ARGV[i].dup)
+			if show == nil then 
+				break
+			end
 			episodes_list=get_episodes(show,"local")
 			puts $offline if $offline != ""
 			puts "Name: "+show[:title]
@@ -408,6 +423,9 @@ EOS
 	if $opts[:showall]==true then
 		for i in 0...ARGV.length do
 			show=get_show(ARGV[i].dup)
+			if show == nil then 
+				break
+			end
 			episodes_list=get_episodes(show,"local")
 			episodes_list.each { |episode| search_episode<<episode }
 			output(show,search_episode)
